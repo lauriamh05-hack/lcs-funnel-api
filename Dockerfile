@@ -20,4 +20,4 @@ RUN mkdir -p storage/framework/{sessions,views,cache} storage/logs bootstrap/cac
     && chmod -R a+rw storage bootstrap/cache
 
 EXPOSE 8080
-CMD php -d display_errors=1 -d log_errors=1 -d error_reporting=E_ALL artisan serve --host 0.0.0.0 --port ${PORT:-8080}
+CMD php artisan migrate --force && php artisan serve --host 0.0.0.0 --port ${PORT:-8080}
