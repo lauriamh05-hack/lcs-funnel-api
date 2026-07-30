@@ -2,8 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Mail\LeadGuideMail;
-use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Http;
 use App\Http\Controllers\Controller;
 use App\Models\Lead;
 use Illuminate\Http\Request;
@@ -30,8 +29,21 @@ class LeadController extends Controller
         ]);
 
         if ($lead->email) {
-            Mail::to($lead->email)->send(new LeadGuideMail($lead));
-        }
+            Http::withHeaders([
+                'api-key' => config('services.brevo.key'),
+                'Content-Type' => 'application/json',
+            ])->post('https://api.brevo.com/v3/smtp/email', [
+                'sender' => [
+                    'name' => config('mail.from.name'),
+                    'email' => config('mail.from.address'),
+                ],
+                'to' => [
+            ['email' => $lead->email, 'name' => $lead->name],
+                ],
+                'subject' => 'Ton guide LCS 2026-2027 est arrivé 🎓',
+            'htmlContent' => view('emails.lead-guide', ['lead' => $lead])->render(),
+        ]);
+}
 
         return response()->json([
             'message' => 'Merci ! Ton guide arrive par email/WhatsApp.',
