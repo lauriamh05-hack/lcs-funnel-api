@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Mail\LeadGuideMail;
+use Illuminate\Support\Facades\Mail;
 use App\Http\Controllers\Controller;
 use App\Models\Lead;
 use Illuminate\Http\Request;
@@ -26,6 +28,10 @@ class LeadController extends Controller
             ...$validated,
             'source' => $request->input('source', 'tiktok_lcs'),
         ]);
+
+        if ($lead->email) {
+            Mail::to($lead->email)->send(new LeadGuideMail($lead));
+        }
 
         return response()->json([
             'message' => 'Merci ! Ton guide arrive par email/WhatsApp.',
